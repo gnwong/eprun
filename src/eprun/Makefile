@@ -1,4 +1,6 @@
 
+.PHONY: eprun clean
+
 all: eprun
 
 eprun:

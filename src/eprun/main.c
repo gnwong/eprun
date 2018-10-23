@@ -28,7 +28,7 @@
 
 #include "dispatch.h"
 
-int nthreads = 8;
+int nthreads = 12;
 
 char **get_commands(const char *fname, int *ncommands);
 void stripline(char *s);
