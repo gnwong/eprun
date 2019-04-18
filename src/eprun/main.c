@@ -28,7 +28,7 @@
 
 #include "dispatch.h"
 
-int nthreads = 12;
+int nthreads = 6;
 
 char **get_commands(const char *fname, int *ncommands);
 void stripline(char *s);
@@ -41,6 +41,10 @@ int main (int argc, char **argv) {
   char **commands = get_commands(argv[1], &ncommands);
   if (commands == NULL) {
     error(-1, "! unable to read command file", 1);
+  }
+
+  if (argc > 2) {
+    nthreads = atoi(argv[2]);
   }
 
   int global_nodecount = 0;
