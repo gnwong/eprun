@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# run on frontera
+
+#SBATCH -p development
+#SBATCH --output=test-output-%j
+#SBATCH -N 4
+#SBATCH -n 4
+#SBATCH --time=1:00:00
+
+export OMP_NUM_THREADS=56
+
+pwd
+module list
+date
+
+mpiexec meprun run_4
+
