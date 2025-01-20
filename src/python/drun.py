@@ -1,3 +1,5 @@
+#!/home/gnwong/miniconda3/bin/python
+
 """
  * Copyright (c) 2024 George Wong
  * 
@@ -23,10 +25,14 @@
 import os
 import fcntl
 import sys
+import time
+
+from multiprocessing import Pool
 
 
 def get_next_command(fname):
     """ Return the next command from the file and remove it safely. """
+    commands = [None]
     with open(fname, 'r+') as f:
         fcntl.flock(f, fcntl.LOCK_EX)
         commands = f.readlines()
@@ -36,18 +42,39 @@ def get_next_command(fname):
         f.truncate()
         f.writelines(commands[1:])
         fcntl.flock(f, fcntl.LOCK_UN)
-        return commands[0].strip()
+    return commands[0].strip()
 
 
-if __name__ == "__main__":
-
-    commands_fname = sys.argv[1]
-    print(f' - running commands from: {commands_fname}')
-
+def run(args):
+    """ Pull commands from file and launch them. """
+    index, fname = args
+    time.sleep(index)
     while True:
-        command = get_next_command(commands_fname)
+        command = get_next_command(fname)
         if not command:
             print(' - no more commands to run')
             break
         print(f' - running command: {command}')
         os.system(command)
+
+
+if __name__ == "__main__":
+
+    commands_fname = sys.argv[1]
+
+    n_parallel = 1
+    if len(sys.argv) > 2:
+        n_parallel = int(sys.argv[2])
+        print(f' - launching {n_parallel} simultaneous processes')
+
+    all_commands = []
+    for i in range(n_parallel):
+        all_commands.append((i, commands_fname))
+
+    print(f' - running commands from: {commands_fname}')
+    with Pool(processes=n_parallel) as pool:
+        pool.map(run, all_commands)
+    
+
+
+
