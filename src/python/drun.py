@@ -28,27 +28,31 @@ import sys
 import time
 
 from multiprocessing import Pool
+from filelock import FileLock, Timeout
 
 
 def get_next_command(fname):
     """ Return the next command from the file and remove it safely. """
     commands = [None]
-    with open(fname, 'r+') as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
-        commands = f.readlines()
-        if not commands:
-            return None
-        f.seek(0)
-        f.truncate()
-        f.writelines(commands[1:])
-        fcntl.flock(f, fcntl.LOCK_UN)
+    lock = FileLock(fname + '.lock')
+    try:
+        with lock.acquire(timeout=10):
+            with open(fname, 'r+') as f:
+                commands = f.readlines()
+                if not commands:
+                    return None
+                f.seek(0)
+                f.truncate()
+                f.writelines(commands[1:])
+    except Timeout:
+        return None
     return commands[0].strip()
 
 
 def run(args):
     """ Pull commands from file and launch them. """
     index, fname = args
-    time.sleep(index)
+    time.sleep(index/2.)
     while True:
         command = get_next_command(fname)
         if not command:
